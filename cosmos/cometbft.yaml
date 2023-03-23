@@ -9,7 +9,6 @@ info:
 
     * URI over HTTP
     * JSONRPC over HTTP
-    * JSONRPC over websockets
 
     ## Configuration
 
@@ -50,18 +49,6 @@ info:
 
         curl --header "Content-Type: application/json" --request POST --data '{"method": "block", "params": ["5"], "id": 1}' localhost:26657
 
-    ## JSONRPC/websockets
-
-    JSONRPC requests can be also made via websocket.
-    The websocket endpoint is at `/websocket`, e.g. `localhost:26657/websocket`.
-    Asynchronous RPC functions like event `subscribe` and `unsubscribe` are
-    only available via websockets.
-
-    For example using the [websocat](https://github.com/vi/websocat) tool, you can subscribe for 'NewBlock` events
-    with the following command:
-
-        echo '{ "jsonrpc": "2.0","method": "subscribe","id": 0,"params": {"query": "tm.event='"'NewBlock'"'"} }' | websocat -n -t ws://127.0.0.1:26657/websocket
-
   version: "main"
   license:
     name: Apache 2.0
@@ -90,21 +77,7 @@ paths:
         - Tx
       operationId: broadcast_tx_sync
       description: |
-        If you want to be sure that the transaction is included in a block, you can
-        subscribe for the result using JSONRPC via a websocket. See
-        https://docs.cometbft.com/main/core/subscription.html
-        If you haven't received anything after a couple of blocks, resend it. If the
-        same happens again, send it to some other node. A few reasons why it could
-        happen:
-
-        1. malicious node can drop or pretend it had committed your tx
-        2. malicious proposer (not necessary the one you're communicating with) can
-        drop transactions, which might become valid in the future
-        (https://github.com/tendermint/tendermint/issues/3322)
-
-
-        Please refer to [formatting/encoding rules](https://docs.cometbft.com/main/core/using-cometbft.html#formatting)
-        for additional details
+        Returns with the response from CheckTx. Does not wait for DeliverTx result.
 
       parameters:
         - in: query
@@ -134,21 +107,7 @@ paths:
         - Tx
       operationId: broadcast_tx_async
       description: |
-        If you want to be sure that the transaction is included in a block, you can
-        subscribe for the result using JSONRPC via a websocket. See
-        https://docs.cometbft.com/main/core/subscription.html
-        If you haven't received anything after a couple of blocks, resend it. If the
-        same happens again, send it to some other node. A few reasons why it could
-        happen:
-
-        1. malicious node can drop or pretend it had committed your tx
-        2. malicious proposer (not necessary the one you're communicating with) can
-        drop transactions, which might become valid in the future
-        (https://github.com/tendermint/tendermint/issues/3322)
-        3. node can be offline
-
-        Please refer to [formatting/encoding rules](https://docs.cometbft.com/main/core/using-cometbft.html#formatting)
-        for additional details
+        Returns right away, with no response. Does not wait for CheckTx nor DeliverTx results.
 
       parameters:
         - in: query
@@ -178,19 +137,7 @@ paths:
         - Tx
       operationId: broadcast_tx_commit
       description: |
-        IMPORTANT: use only for testing and development. In production, use
-        BroadcastTxSync or BroadcastTxAsync. You can subscribe for the transaction
-        result using JSONRPC via a websocket. See
-        https://docs.cometbft.com/main/core/subscription.html
-
-        CONTRACT: only returns error if mempool.CheckTx() errs or if we timeout
-        waiting for tx to commit.
-
-        If CheckTx or DeliverTx fail, no error will be returned, but the returned result
-        will contain a non-OK ABCI code.
-
-        Please refer to [formatting/encoding rules](https://docs.cometbft.com/main/core/using-cometbft.html#formatting)
-        for additional details
+       Returns with the responses from CheckTx and DeliverTx.
 
       parameters:
         - in: query
